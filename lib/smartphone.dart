@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:login/measurements.dart';
 
 class SmartphoneScreen extends StatefulWidget {
   const SmartphoneScreen({Key? key}) : super(key: key);
@@ -8,6 +9,7 @@ class SmartphoneScreen extends StatefulWidget {
 }
 
 class _SmartphoneScreenState extends State<SmartphoneScreen> {
+  List<String> selectedSensors = [];
   List<bool> sensorSelections = List.generate(19, (index) => false);
 
   String getImagePath(int index) {
@@ -24,7 +26,7 @@ class _SmartphoneScreenState extends State<SmartphoneScreen> {
         return 'assets/ambient.png';
       case 5:
         return 'assets/barometer.png';
-        case 6:
+      case 6:
         return 'assets/gps.png';
       case 7:
         return 'assets/fingerprint.png';
@@ -50,7 +52,6 @@ class _SmartphoneScreenState extends State<SmartphoneScreen> {
         return 'assets/imu.png';
       case 18:
         return 'assets/ecg.png';
-    // Add more cases for the remaining images
       default:
         return 'assets/smartphone.png';
     }
@@ -96,7 +97,6 @@ class _SmartphoneScreenState extends State<SmartphoneScreen> {
         return 'IMU';
       case 18:
         return 'ECG';
-    // Add more cases for the remaining sensor names
       default:
         return 'Unknown Sensor';
     }
@@ -110,11 +110,9 @@ class _SmartphoneScreenState extends State<SmartphoneScreen> {
       ),
       body: Column(
         children: [
-          // Your app bar and other widgets here
-
           Expanded(
             child: ListView.builder(
-              itemCount: 19,
+              itemCount: sensorSelections.length,
               itemBuilder: (context, index) {
                 return ListTile(
                   leading: Image.asset(
@@ -125,16 +123,20 @@ class _SmartphoneScreenState extends State<SmartphoneScreen> {
                   title: Text(getSensorName(index)),
                   trailing: IconButton(
                     icon: Icon(
-                      sensorSelections[index]
+                      selectedSensors.contains(getSensorName(index))
                           ? Icons.check_circle
                           : Icons.circle,
-                      color: sensorSelections[index]
+                      color: selectedSensors.contains(getSensorName(index))
                           ? Colors.green
                           : Colors.grey,
                     ),
                     onPressed: () {
                       setState(() {
-                        sensorSelections[index] = !sensorSelections[index];
+                        if (selectedSensors.contains(getSensorName(index))) {
+                          selectedSensors.remove(getSensorName(index));
+                        } else {
+                          selectedSensors.add(getSensorName(index));
+                        }
                       });
                     },
                   ),
@@ -144,10 +146,13 @@ class _SmartphoneScreenState extends State<SmartphoneScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              if (sensorSelections.contains(true)) {
+              if (selectedSensors.isNotEmpty) {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => MeasurementScreen()),
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        MeasurementPage(selectedSensors: selectedSensors),
+                  ),
                 );
               } else {
                 // Show a toast or snackbar indicating that sensors should be selected
@@ -155,26 +160,8 @@ class _SmartphoneScreenState extends State<SmartphoneScreen> {
             },
             child: Text('Start Measurement'),
           ),
-          // Other widgets in the SmartphoneScreen
         ],
       ),
     );
   }
-}
-
-class MeasurementScreen extends StatelessWidget {
-  const MeasurementScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Measurement'),
-      ),
-      body: Center(
-        child: Text('Measurement Screen'),
-      ),
-    );
-  }
-
 }

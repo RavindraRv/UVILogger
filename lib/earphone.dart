@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'measurements.dart';
 
-class EarphoneScreen extends StatelessWidget {
+class EarphoneScreen extends StatefulWidget {
   const EarphoneScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    bool sensor1Selected = false;
-    bool sensor2Selected = false;
-    bool sensor3Selected = false;
+  _EarphoneScreenState createState() => _EarphoneScreenState();
+}
 
+class _EarphoneScreenState extends State<EarphoneScreen> {
+  bool sensor1Selected = false;
+  bool sensor2Selected = false;
+  bool sensor3Selected = false;
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Earphone'),
@@ -30,7 +35,9 @@ class EarphoneScreen extends StatelessWidget {
             name: 'Audio Sensor',
             selected: sensor1Selected,
             onTap: () {
-              sensor1Selected = !sensor1Selected;
+              setState(() {
+                sensor1Selected = !sensor1Selected;
+              });
             },
           ),
           SensorButton(
@@ -38,7 +45,9 @@ class EarphoneScreen extends StatelessWidget {
             name: 'Accelerometer',
             selected: sensor2Selected,
             onTap: () {
-              sensor2Selected = !sensor2Selected;
+              setState(() {
+                sensor2Selected = !sensor2Selected;
+              });
             },
           ),
           SensorButton(
@@ -46,15 +55,29 @@ class EarphoneScreen extends StatelessWidget {
             name: 'Gyroscope',
             selected: sensor3Selected,
             onTap: () {
-              sensor3Selected = !sensor3Selected;
+              setState(() {
+                sensor3Selected = !sensor3Selected;
+              });
             },
           ),
           SizedBox(height: 40),
           ElevatedButton(
             onPressed: () {
+              List<String> selectedSensors = [];
+
+              if (sensor1Selected) {
+                selectedSensors.add('Audio Sensor');
+              }
+              if (sensor2Selected) {
+                selectedSensors.add('Accelerometer');
+              }
+              if (sensor3Selected) {
+                selectedSensors.add('Gyroscope');
+              }
+
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => MeasurementPage()),
+                MaterialPageRoute(builder: (context) => MeasurementPage(selectedSensors: selectedSensors)),
               );
             },
             child: Text('Start Measurement'),
@@ -65,7 +88,7 @@ class EarphoneScreen extends StatelessWidget {
   }
 }
 
-class SensorButton extends StatefulWidget {
+class SensorButton extends StatelessWidget {
   final String image;
   final String name;
   final bool selected;
@@ -79,40 +102,21 @@ class SensorButton extends StatefulWidget {
   });
 
   @override
-  _SensorButtonState createState() => _SensorButtonState();
-}
-
-class _SensorButtonState extends State<SensorButton> {
-  bool selected = false;
-
-  @override
-  void initState() {
-    super.initState();
-    selected = widget.selected;
-  }
-
-  @override
   Widget build(BuildContext context) {
     return ListTile(
       leading: Image.asset(
-        widget.image,
+        image,
         width: 40,
         height: 40,
       ),
-      title: Text(widget.name),
+      title: Text(name),
       trailing: IconButton(
         icon: Icon(
           selected ? Icons.check_circle : Icons.radio_button_unchecked,
           color: selected ? Colors.green : null,
         ),
-        onPressed: () {
-          setState(() {
-            selected = !selected;
-            widget.onTap();
-          });
-        },
+        onPressed: onTap,
       ),
     );
   }
 }
-
