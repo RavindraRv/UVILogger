@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:sensors/sensors.dart';
+//import 'package:proximity_sensor/proximity_sensor.dart';
+//import 'package:light/light.dart';
+import 'package:flutter_barometer/flutter_barometer.dart';
+//import 'package:heart_rate_flutter/heart_rate_flutter.dart';
+//import 'package:pedometer/pedometer.dart';
 
 class MeasurementPage extends StatefulWidget {
   final List<String> selectedSensors;
@@ -17,6 +23,19 @@ class _MeasurementPageState extends State<MeasurementPage> {
   int secondsElapsed = 0;
   late Timer timer;
 
+  // Sensor data variables
+  double accelerometerX = 0.0;
+  double accelerometerY = 0.0;
+  double accelerometerZ = 0.0;
+  double gyroscopeX = 0.0;
+  double gyroscopeY = 0.0;
+  double gyroscopeZ = 0.0;
+  double proximity = 0.0;
+  double light = 0.0;
+  double pressure = 0.0;
+  double heartRate = 0.0;
+  double stepCount = 0.0;
+
   @override
   void initState() {
     super.initState();
@@ -27,6 +46,9 @@ class _MeasurementPageState extends State<MeasurementPage> {
         });
       }
     });
+
+    // Initialize sensor listeners for selected sensors
+    initializeSensors();
   }
 
   @override
@@ -64,6 +86,70 @@ class _MeasurementPageState extends State<MeasurementPage> {
     setState(() {
       isTimerRunning = false;
     });
+  }
+
+  void initializeSensors() {
+    if (widget.selectedSensors.contains('Accelerometer')) {
+      accelerometerEvents.listen((AccelerometerEvent event) {
+        setState(() {
+          accelerometerX = event.x;
+          accelerometerY = event.y;
+          accelerometerZ = event.z;
+        });
+      });
+    }
+
+    if (widget.selectedSensors.contains('Gyroscope')) {
+      gyroscopeEvents.listen((GyroscopeEvent event) {
+        setState(() {
+          gyroscopeX = event.x;
+          gyroscopeY = event.y;
+          gyroscopeZ = event.z;
+        });
+      });
+    }
+/*
+    if (widget.selectedSensors.contains('Proximity')) {
+      proximityEvents.listen((ProximityEvent event) {
+        setState(() {
+          proximity = event.getValue();
+        });
+      });
+    }*/
+
+   /* if (widget.selectedSensors.contains('Ambient light')) {
+      lightEvents.listen((LightEvent event) {
+        setState(() {
+          light = event.light;
+        });
+      });
+    }
+*/
+    if (widget.selectedSensors.contains('Barometer')) {
+      flutterBarometerEvents.listen((FlutterBarometerEvent event) {
+        setState(() {
+          pressure = event.pressure;
+        });
+      });
+    }
+
+    /*if (widget.selectedSensors.contains('Heart Rate')) {
+      HeartRateMonitor heartRateMonitor = HeartRateMonitor();
+      heartRateMonitor.startSensor().then((HeartRatePulseEvent event) {
+        setState(() {
+          heartRate = event.heartRate!;
+        });
+      });
+    }*/
+
+    /*if (widget.selectedSensors.contains('Pedometer')) {
+      Pedometer pedometer = Pedometer();
+      pedometer.pedometerStream.listen((PedometerEvent event) {
+        setState(() {
+          stepCount = event.steps!.toDouble();
+        });
+      });
+    }*/
   }
 
   @override
@@ -160,9 +246,17 @@ class _MeasurementPageState extends State<MeasurementPage> {
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('X: 0.000'),
-                                Text('Y: 0.000'),
-                                Text('Z: 0.000'),
+                                if (sensor == 'Accelerometer') Text('X: $accelerometerX'),
+                                if (sensor == 'Accelerometer') Text('Y: $accelerometerY'),
+                                if (sensor == 'Accelerometer') Text('Z: $accelerometerZ'),
+                                if (sensor == 'Gyroscope') Text('X: $gyroscopeX'),
+                                if (sensor == 'Gyroscope') Text('Y: $gyroscopeY'),
+                                if (sensor == 'Gyroscope') Text('Z: $gyroscopeZ'),
+                                if (sensor == 'Proximity') Text('Value: $proximity'),
+                                if (sensor == 'Ambient light') Text('Value: $light'),
+                                if (sensor == 'Barometer') Text('Pressure: $pressure'),
+                                if (sensor == 'Heart Rate') Text('Heart Rate: $heartRate'),
+                                if (sensor == 'Pedometer') Text('Step Count: $stepCount'),
                               ],
                             ),
                           ),

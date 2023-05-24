@@ -30,8 +30,18 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
-
+  flutter_sensors: ^1.0.1
+  #proximity_sensor:
+  #light: ^2.1.0
+  flutter_barometer: ^0.1.0
+  #heart_rate_flutter: ^0.0.2
+  #pedometer: ^3.0.0
+  #environment_sensors: ^0.2.0
+  #motion_sensors: ^0.1.0
+  #proximity_sensor:
+  #all_sensors:
+  #environment_sensors:
+  sensors:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
