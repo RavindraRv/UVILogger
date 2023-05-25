@@ -1,11 +1,12 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:sensors/sensors.dart';
-//import 'package:proximity_sensor/proximity_sensor.dart';
-//import 'package:light/light.dart';
 import 'package:flutter_barometer/flutter_barometer.dart';
-//import 'package:heart_rate_flutter/heart_rate_flutter.dart';
-//import 'package:pedometer/pedometer.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:flutter/cupertino.dart';
 
 class MeasurementPage extends StatefulWidget {
   final List<String> selectedSensors;
@@ -30,12 +31,10 @@ class _MeasurementPageState extends State<MeasurementPage> {
   double gyroscopeX = 0.0;
   double gyroscopeY = 0.0;
   double gyroscopeZ = 0.0;
-  double proximity = 0.0;
-  double light = 0.0;
   double pressure = 0.0;
-  double heartRate = 0.0;
-  double stepCount = 0.0;
-
+  double latitude = 0.0;
+  double longitude = 0.0;
+  double locationValue = 0.0;
   @override
   void initState() {
     super.initState();
@@ -46,15 +45,61 @@ class _MeasurementPageState extends State<MeasurementPage> {
         });
       }
     });
-
-    // Initialize sensor listeners for selected sensors
     initializeSensors();
+    requestLocationPermission();
   }
 
   @override
   void dispose() {
     timer.cancel();
     super.dispose();
+  }
+
+  Future<void> requestLocationPermission() async {
+    final PermissionStatus permissionStatus = await Permission.location.request();
+    if (permissionStatus.isDenied || permissionStatus.isPermanentlyDenied) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return CupertinoAlertDialog(
+            title: Text('Location Permission'),
+            content: Text('Please grant location permission to continue.'),
+            actions: [
+              CupertinoDialogAction(
+                child: Text('Cancel'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              CupertinoDialogAction(
+                child: Text('Open Settings'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  openAppSettings();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    } else if (permissionStatus.isGranted) {
+      retrieveLocationData();
+    }
+  }
+
+  double calculateLocationValue() {
+    double distance = sqrt(pow(latitude, 2) + pow(longitude, 2));
+    return distance;
+  }
+
+  void retrieveLocationData() async {
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+    setState(() {
+      latitude = position.latitude;
+      longitude = position.longitude;
+      locationValue = calculateLocationValue(); // Calculate the location value
+
+    });
   }
 
   void addActivity() {
@@ -108,23 +153,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
         });
       });
     }
-/*
-    if (widget.selectedSensors.contains('Proximity')) {
-      proximityEvents.listen((ProximityEvent event) {
-        setState(() {
-          proximity = event.getValue();
-        });
-      });
-    }*/
 
-   /* if (widget.selectedSensors.contains('Ambient light')) {
-      lightEvents.listen((LightEvent event) {
-        setState(() {
-          light = event.light;
-        });
-      });
-    }
-*/
     if (widget.selectedSensors.contains('Barometer')) {
       flutterBarometerEvents.listen((FlutterBarometerEvent event) {
         setState(() {
@@ -132,24 +161,6 @@ class _MeasurementPageState extends State<MeasurementPage> {
         });
       });
     }
-
-    /*if (widget.selectedSensors.contains('Heart Rate')) {
-      HeartRateMonitor heartRateMonitor = HeartRateMonitor();
-      heartRateMonitor.startSensor().then((HeartRatePulseEvent event) {
-        setState(() {
-          heartRate = event.heartRate!;
-        });
-      });
-    }*/
-
-    /*if (widget.selectedSensors.contains('Pedometer')) {
-      Pedometer pedometer = Pedometer();
-      pedometer.pedometerStream.listen((PedometerEvent event) {
-        setState(() {
-          stepCount = event.steps!.toDouble();
-        });
-      });
-    }*/
   }
 
   @override
@@ -225,9 +236,10 @@ class _MeasurementPageState extends State<MeasurementPage> {
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Value: 0.000'),
-                        Text('Latitude: 0.000'),
-                        Text('Longitude: Location'),
+                        Text('Latitude: ${latitude.toStringAsFixed(3)}'),
+                        Text('Longitude: ${longitude.toStringAsFixed(3)}'),
+                        Text('Value: ${locationValue.toStringAsFixed(3)}'), // Display the location value
+
                       ],
                     ),
                   ),
@@ -252,11 +264,8 @@ class _MeasurementPageState extends State<MeasurementPage> {
                                 if (sensor == 'Gyroscope') Text('X: $gyroscopeX'),
                                 if (sensor == 'Gyroscope') Text('Y: $gyroscopeY'),
                                 if (sensor == 'Gyroscope') Text('Z: $gyroscopeZ'),
-                                if (sensor == 'Proximity') Text('Value: $proximity'),
-                                if (sensor == 'Ambient light') Text('Value: $light'),
                                 if (sensor == 'Barometer') Text('Pressure: $pressure'),
-                                if (sensor == 'Heart Rate') Text('Heart Rate: $heartRate'),
-                                if (sensor == 'Pedometer') Text('Step Count: $stepCount'),
+                                if (sensor == 'GPS') Text('${longitude.toStringAsFixed(3)}'),
                               ],
                             ),
                           ),
